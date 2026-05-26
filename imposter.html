@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Imposter</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Party Game</p>
+          <h1>Imposter</h1>
+        </div>
+        <div class="round-pill" id="roundStatus">Setup</div>
+      </header>
+
+      <section class="stage" id="setupScreen" aria-label="Spiel vorbereiten">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Spieler</p>
+            <h2>Wer spielt mit?</h2>
+          </div>
+          <div class="player-count" id="playerCount">0/12</div>
+        </div>
+
+        <div class="player-list" id="playerList" aria-label="Spielernamen"></div>
+
+        <div class="timer-choice" aria-label="Diskussionszeit">
+          <p>Zeit pro Runde</p>
+          <div class="segmented-control">
+            <button class="segment" type="button" data-seconds="180" aria-pressed="true">3 Minuten</button>
+            <button class="segment" type="button" data-seconds="300" aria-pressed="false">5 Minuten</button>
+          </div>
+        </div>
+
+        <p class="helper" id="setupHint">Noch 3 Namen bis zur ersten Runde.</p>
+
+        <div class="actions">
+          <button class="secondary-button" type="button" id="addPlayerButton">
+            <span>+</span> Spieler
+          </button>
+          <button class="primary-button" type="button" id="startRoundButton">Runde starten</button>
+        </div>
+      </section>
+
+      <section class="stage hidden" id="handoffScreen" aria-label="Handy weitergeben">
+        <div class="paint-burst" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <p class="eyebrow" id="roleProgress">Spieler 1 von 3</p>
+        <h2 id="currentPlayerName">Spieler</h2>
+        <p class="lead">Nur diese Person darf jetzt auf den Bildschirm schauen.</p>
+        <button class="primary-button wide" type="button" id="showRoleButton">Rolle anzeigen</button>
+      </section>
+
+      <section class="stage secret-stage hidden" id="revealScreen" aria-label="Geheime Rolle">
+        <p class="eyebrow">Geheim fuer</p>
+        <h2 id="secretOwner">Spieler</h2>
+        <div class="secret-card" id="secretCard">
+          <p class="secret-label" id="secretLabel">Geheimes Wort</p>
+          <p class="secret-value" id="secretValue">Pizza</p>
+        </div>
+        <p class="lead">Merk dir deine Rolle und gib das Handy verdeckt weiter.</p>
+        <button class="secondary-button wide" type="button" id="hideRoleButton">Verstanden</button>
+      </section>
+
+      <section class="stage hidden" id="discussionScreen" aria-label="Diskussion">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Diskussion</p>
+            <h2>Findet den Imposter</h2>
+          </div>
+        </div>
+
+        <div class="timer-panel" id="timerPanel">
+          <p id="timerLabel">Diskussionszeit</p>
+          <div id="timerDisplay">3:00</div>
+        </div>
+
+        <div class="name-grid" id="discussionPlayers" aria-label="Spieler in der Runde"></div>
+
+        <button class="primary-button wide" type="button" id="finishRoundButton">Aufloesen</button>
+      </section>
+
+      <section class="stage hidden" id="resultScreen" aria-label="Aufloesung">
+        <p class="eyebrow">Der Imposter war</p>
+        <div class="result-name" id="imposterName">Spieler</div>
+        <p class="lead">Das geheime Wort war: <strong id="finalWord">Pizza</strong></p>
+        <div class="actions">
+          <button class="secondary-button" type="button" id="editPlayersButton">Spieler bearbeiten</button>
+          <button class="primary-button" type="button" id="newRoundButton">Neue Runde</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

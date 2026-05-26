@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kenans Spiele</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f9fbff;
+        --muted: #aab6d3;
+        --bg: #071024;
+        --panel: rgba(12, 20, 43, 0.9);
+        --blue: #2fb8ff;
+        --pink: #ff4ea1;
+        --green: #53e078;
+        --yellow: #ffd34d;
+        --orange: #ff8b42;
+        --violet: #835cff;
+        --shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          linear-gradient(135deg, rgba(47, 184, 255, 0.22) 0 16%, transparent 16% 100%),
+          linear-gradient(225deg, rgba(255, 78, 161, 0.22) 0 20%, transparent 20% 100%),
+          radial-gradient(circle at 20% 18%, rgba(255, 211, 77, 0.22), transparent 28%),
+          radial-gradient(circle at 84% 80%, rgba(83, 224, 120, 0.18), transparent 25%),
+          var(--bg);
+      }
+
+      button {
+        border: 0;
+        border-radius: 8px;
+        font: inherit;
+        font-weight: 1000;
+        cursor: pointer;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        width: min(1120px, calc(100% - 28px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 18px 0;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .topbar {
+        min-height: 86px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px 18px;
+        border-radius: 8px;
+        background: linear-gradient(110deg, var(--blue), var(--violet) 48%, var(--pink));
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        margin: 0 0 7px;
+        font-size: 0.78rem;
+        font-weight: 950;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1, h2, h3, p { margin-top: 0; }
+      h1 {
+        margin-bottom: 0;
+        font-size: clamp(2rem, 7vw, 4.3rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+      }
+      h2 {
+        margin-bottom: 0;
+        font-size: clamp(1.6rem, 4vw, 2.7rem);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      .menu-button, .wide-button, .controls button, .overlay button {
+        min-height: 52px;
+        padding: 0 18px;
+        color: #071024;
+        background: linear-gradient(135deg, var(--yellow), var(--green));
+        box-shadow: 0 14px 34px rgba(83, 224, 120, 0.18);
+      }
+
+      .home {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .game-card {
+        min-height: 420px;
+        display: grid;
+        align-content: end;
+        justify-items: start;
+        gap: 8px;
+        padding: 24px;
+        border-radius: 8px;
+        color: #ffffff;
+        text-align: left;
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .game-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.36;
+      }
+      .game-card > * { position: relative; z-index: 1; }
+      .game-card span { font-size: 0.85rem; font-weight: 950; text-transform: uppercase; }
+      .game-card strong { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 0.95; }
+      .imposter { background: linear-gradient(135deg, var(--blue), var(--pink)); }
+      .dash { background: linear-gradient(135deg, var(--yellow), var(--orange)); }
+      .blocks { background: linear-gradient(135deg, var(--green), var(--violet)); }
+
+      .game-view {
+        min-height: 0;
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+      .hidden { display: none; }
+
+      iframe {
+        width: 100%;
+        height: calc(100vh - 132px);
+        min-height: 620px;
+        display: block;
+        border: 0;
+        background: #ffffff;
+      }
+
+      .game-head {
+        min-height: 82px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 16px;
+      }
+      .score-box {
+        min-width: 92px;
+        display: grid;
+        place-items: center;
+        gap: 3px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: rgba(5, 10, 26, 0.58);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      }
+      .score-box span { font-size: 1.55rem; line-height: 1; font-weight: 1000; }
+      .score-box small { color: rgba(255, 255, 255, 0.75); font-size: 0.72rem; font-weight: 900; text-transform: uppercase; }
+      .dash-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .dash-country {
+        min-width: 118px;
+      }
+      .dash-country span {
+        max-width: 132px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 1rem;
+      }
+
+      #dashCanvas {
+        width: 100%;
+        height: min(560px, calc(100vh - 250px));
+        min-height: 420px;
+        display: block;
+        background: #071024;
+        touch-action: manipulation;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 12px;
+        padding: 14px;
+      }
+      .controls button:first-child { color: #ffffff; background: linear-gradient(135deg, var(--blue), var(--violet)); }
+      .controls button:last-child { color: #ffffff; background: linear-gradient(135deg, var(--pink), var(--orange)); }
+
+      .overlay {
+        position: absolute;
+        inset: 82px 0 82px;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 12px;
+        padding: 18px;
+        text-align: center;
+        background: rgba(7, 16, 36, 0.62);
+      }
+      .overlay.hidden { display: none; }
+      .overlay h3 { margin-bottom: 0; font-size: clamp(2rem, 7vw, 4.2rem); line-height: 1; }
+      .overlay p { margin-bottom: 2px; color: var(--muted); font-weight: 850; }
+
+      .block-layout {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) minmax(250px, 330px);
+        gap: 14px;
+        padding: 0 16px 16px;
+      }
+      .block-board {
+        width: min(100%, 620px, calc(100vh - 210px));
+        aspect-ratio: 1;
+        justify-self: center;
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        grid-template-rows: repeat(8, minmax(0, 1fr));
+        gap: clamp(4px, 1vw, 8px);
+        padding: clamp(8px, 1.6vw, 14px);
+        border-radius: 8px;
+        background: linear-gradient(135deg, rgba(47, 184, 255, 0.24), rgba(255, 78, 161, 0.2)), #09122b;
+      }
+      .block-cell, .piece-cell {
+        border-radius: 7px;
+        background: #132143;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      }
+      .block-cell.filled, .piece-cell.active {
+        background: var(--block-color);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
+      }
+      .block-cell.preview { background: var(--block-color); opacity: 0.72; transform: scale(0.94); }
+      .block-cell.bad { background: rgba(255, 78, 161, 0.38); }
+      .piece-list { display: grid; gap: 12px; align-content: center; }
+      .piece-button {
+        min-height: 112px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+      }
+      .piece-button.selected { background: rgba(47, 184, 255, 0.18); box-shadow: inset 0 0 0 2px rgba(47, 184, 255, 0.75); }
+      .piece-button.used { opacity: 0.34; cursor: default; }
+      .piece-preview {
+        width: 82px;
+        height: 82px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: 4px;
+      }
+      .piece-label { text-align: left; font-weight: 1000; }
+      #blocksView .wide-button { margin: 0 16px 16px; width: calc(100% - 32px); }
+
+      @media (max-width: 820px) {
+        .app { width: min(100% - 16px, 1120px); padding: 8px 0; gap: 8px; }
+        .topbar { min-height: 72px; padding: 13px; }
+        .home { grid-template-columns: 1fr; }
+        .game-card { min-height: 190px; }
+        .dash-stats { gap: 8px; }
+        .dash-country { min-width: 96px; }
+        .dash-country span { max-width: 104px; font-size: 0.86rem; }
+        iframe { height: calc(100vh - 96px); min-height: 560px; }
+        .block-layout { grid-template-columns: 1fr; }
+        .block-board { width: min(100%, calc(100vh - 310px)); min-width: min(100%, 320px); }
+        .piece-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .piece-button { min-height: 98px; grid-template-columns: 1fr; justify-items: center; }
+        .piece-label { display: none; }
+        .piece-preview { width: min(74px, 24vw); height: min(74px, 24vw); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Game Browser</p>
+          <h1>Kenans Spiele</h1>
+        </div>
+        <button class="menu-button" type="button" id="homeButton">Menue</button>
+      </header>
+
+      <section class="home" id="homeView" aria-label="Spielauswahl">
+        <button class="game-card imposter" type="button" data-game="imposter">
+          <span>Party</span>
+          <strong>Imposter</strong>
+        </button>
+        <button class="game-card dash" type="button" data-game="dash">
+          <span>Arcade</span>
+          <strong>Cube Dash</strong>
+        </button>
+        <button class="game-card blocks" type="button" data-game="blocks">
+          <span>Puzzle</span>
+          <strong>Block Pop</strong>
+        </button>
+      </section>
+
+      <section class="game-view hidden" id="imposterView" aria-label="Imposter">
+        <iframe title="Imposter" src="imposter.html"></iframe>
+      </section>
+
+      <section class="game-view hidden" id="dashView" aria-label="Cube Dash">
+        <div class="game-head">
+          <div>
+            <p class="eyebrow">Arcade</p>
+            <h2>Cube Dash</h2>
+          </div>
+          <div class="dash-stats">
+            <div class="score-box dash-country"><span id="dashCountry">Tuerkei</span><small>Land</small></div>
+            <div class="score-box"><span id="dashLevel">1</span><small>Level</small></div>
+            <div class="score-box"><span id="dashScore">0</span><small>Score</small></div>
+          </div>
+        </div>
+        <canvas id="dashCanvas"></canvas>
+        <div class="controls">
+          <button type="button" id="dashJumpButton">Springen</button>
+          <button type="button" id="dashRestartButton">Neu starten</button>
+        </div>
+        <div class="overlay" id="dashOverlay">
+          <h3 id="dashOverlayTitle">World Dash</h3>
+          <p>Springe ueber Moscheen, Bruecken, Tuerme und andere Wahrzeichen.</p>
+          <button type="button" id="dashStartButton">Start</button>
+        </div>
+      </section>
+
+      <section class="game-view hidden" id="blocksView" aria-label="Block Pop">
+        <div class="game-head">
+          <div>
+            <p class="eyebrow">Puzzle</p>
+            <h2>Block Pop</h2>
+          </div>
+          <div class="score-box"><span id="blockScore">0</span><small>Score</small></div>
+        </div>
+        <div class="block-layout">
+          <div class="block-board" id="blockBoard"></div>
+          <div class="piece-list" id="pieceList"></div>
+        </div>
+        <button class="wide-button" type="button" id="blockRestartButton">Neu starten</button>
+      </section>
+    </main>
+
+    <script>
+      const views = {
+        home: document.getElementById("homeView"),
+        imposter: document.getElementById("imposterView"),
+        dash: document.getElementById("dashView"),
+        blocks: document.getElementById("blocksView")
+      };
+
+      document.getElementById("homeButton").addEventListener("click", () => showView("home"));
+      document.querySelectorAll("[data-game]").forEach((button) => {
+        button.addEventListener("click", () => showView(button.dataset.game));
+      });
+
+      function showView(name) {
+        Object.entries(views).forEach(([key, element]) => {
+          element.classList.toggle("hidden", key !== name);
+        });
+        if (name === "dash") {
+          resizeDash();
+          drawDash();
+        }
+      }
+
+      const dashCanvas = document.getElementById("dashCanvas");
+      const dashCtx = dashCanvas.getContext("2d");
+      const dashScore = document.getElementById("dashScore");
+      const dashLevel = document.getElementById("dashLevel");
+      const dashCountry = document.getElementById("dashCountry");
+      const dashOverlay = document.getElementById("dashOverlay");
+      const dashOverlayTitle = document.getElementById("dashOverlayTitle");
+      const dashThemes = [
+        {
+          country: "Tuerkei",
+          place: "Istanbul",
+          sky: ["#081526", "#133f5e", "#071024"],
+          accent: "#e11d48",
+          glow: "#38bdf8",
+          ground: "#102033",
+          objects: ["mosque", "bridge", "minaret"]
+        },
+        {
+          country: "Frankreich",
+          place: "Paris",
+          sky: ["#111827", "#312e81", "#06121f"],
+          accent: "#60a5fa",
+          glow: "#f8fafc",
+          ground: "#10172a",
+          objects: ["eiffel", "arc", "lamp"]
+        },
+        {
+          country: "Japan",
+          place: "Kyoto",
+          sky: ["#1b1028", "#5b2146", "#08111f"],
+          accent: "#ef4444",
+          glow: "#f9a8d4",
+          ground: "#171126",
+          objects: ["torii", "pagoda", "lantern"]
+        },
+        {
+          country: "Aegypten",
+          place: "Gizeh",
+          sky: ["#24130a", "#7c3f16", "#09111f"],
+          accent: "#f59e0b",
+          glow: "#fde68a",
+          ground: "#21140c",
+          objects: ["pyramid", "obelisk", "temple"]
+        }
+      ];
+      const dashObjectSizes = {
+        mosque: { w: 82, h: 88 },
+        bridge: { w: 128, h: 58 },
+        minaret: { w: 42, h: 108 },
+        eiffel: { w: 70, h: 116 },
+        arc: { w: 82, h: 78 },
+        lamp: { w: 38, h: 88 },
+        torii: { w: 88, h: 78 },
+        pagoda: { w: 82, h: 108 },
+        lantern: { w: 44, h: 78 },
+        pyramid: { w: 92, h: 72 },
+        obelisk: { w: 42, h: 110 },
+        temple: { w: 92, h: 82 }
+      };
+      const dash = {
+        running: false,
+        width: 0,
+        height: 0,
+        dpr: 1,
+        ground: 0,
+        score: 0,
+        level: 1,
+        themeIndex: 0,
+        baseSpeed: 430,
+        speed: 430,
+        gravity: 3500,
+        jump: -940,
+        last: 0,
+        maxJumps: 2,
+        player: { x: 0, y: 0, size: 46, vy: 0, grounded: true, jumpsLeft: 2, rotation: 0 },
+        obstacles: [],
+        nextGap: 420
+      };
+
+      document.getElementById("dashStartButton").addEventListener("click", startDash);
+      document.getElementById("dashJumpButton").addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        dashAction();
+      });
+      document.getElementById("dashRestartButton").addEventListener("click", startDash);
+      dashCanvas.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        dashAction();
+      });
+      window.addEventListener("resize", resizeDash);
+      window.addEventListener("keydown", (event) => {
+        if (views.dash.classList.contains("hidden")) return;
+        if (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW") {
+          event.preventDefault();
+          dashAction();
+        }
+      });
+
+      function resizeDash() {
+        const rect = dashCanvas.getBoundingClientRect();
+        dash.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+        dash.width = Math.max(320, Math.floor(rect.width));
+        dash.height = Math.max(360, Math.floor(rect.height));
+        dashCanvas.width = Math.floor(dash.width * dash.dpr);
+        dashCanvas.height = Math.floor(dash.height * dash.dpr);
+        dashCtx.setTransform(dash.dpr, 0, 0, dash.dpr, 0, 0);
+        dash.ground = Math.floor(dash.height * 0.76);
+        dash.player.size = clamp(dash.width * 0.058, 34, 52);
+        dash.player.x = Math.floor(dash.width * 0.17);
+        if (!dash.running) dash.player.y = dash.ground - dash.player.size;
+      }
+
+      function startDash() {
+        resizeDash();
+        dash.running = true;
+        dash.score = 0;
+        dash.level = 1;
+        dash.themeIndex = 0;
+        dash.baseSpeed = clamp(dash.width * 0.46, 360, 560);
+        dash.speed = dash.baseSpeed;
+        dash.gravity = clamp(dash.height * 6.5, 3150, 4300);
+        dash.jump = -clamp(dash.height * 1.76, 810, 1040);
+        dash.player.y = dash.ground - dash.player.size;
+        dash.player.vy = 0;
+        dash.player.grounded = true;
+        dash.player.jumpsLeft = dash.maxJumps;
+        dash.player.rotation = 0;
+        dash.obstacles = [];
+        dash.nextGap = 420;
+        dash.last = performance.now();
+        updateDashProgress();
+        dashOverlay.classList.add("hidden");
+        spawnDashObstacle(dash.width + 380);
+      }
+
+      function dashAction() {
+        if (!dash.running) {
+          startDash();
+          return;
+        }
+        const player = dash.player;
+        if (player.grounded) {
+          player.jumpsLeft = dash.maxJumps;
+        }
+        if (player.jumpsLeft <= 0) return;
+        player.vy = player.grounded ? dash.jump : dash.jump * 0.88;
+        player.grounded = false;
+        player.jumpsLeft -= 1;
+      }
+
+      function dashLoop(time) {
+        const dt = Math.min((time - dash.last) / 1000 || 0, 0.033);
+        dash.last = time;
+        if (dash.running) updateDash(dt);
+        if (!views.dash.classList.contains("hidden")) drawDash();
+        requestAnimationFrame(dashLoop);
+      }
+
+      function updateDash(dt) {
+        dash.score += dash.speed * dt / 18;
+        updateDashProgress();
+        const player = dash.player;
+        player.vy += dash.gravity * dt;
+        player.y += player.vy * dt;
+        if (player.y >= dash.ground - player.size) {
+          player.y = dash.ground - player.size;
+          player.vy = 0;
+          player.grounded = true;
+          player.jumpsLeft = dash.maxJumps;
+          player.rotation = Math.round(player.rotation / (Math.PI / 2)) * (Math.PI / 2);
+        } else {
+          player.rotation += dt * dash.speed * 0.012;
+        }
+        dash.obstacles.forEach((obstacle) => { obstacle.x -= dash.speed * dt; });
+        dash.obstacles = dash.obstacles.filter((obstacle) => obstacle.x + obstacle.w > -60);
+        const farthest = dash.obstacles.reduce((max, obstacle) => Math.max(max, obstacle.x + obstacle.w), 0);
+        if (farthest < dash.width + 460) {
+          spawnDashObstacle(Math.max(dash.width + 320, farthest + dash.nextGap));
+        }
+        if (dash.obstacles.some(hitDashObstacle)) {
+          dash.running = false;
+          dashOverlayTitle.textContent = `${Math.floor(dash.score)} Punkte in ${currentDashTheme().country}`;
+          dashOverlay.classList.remove("hidden");
+        }
+      }
+
+      function updateDashProgress() {
+        dash.level = 1 + Math.floor(dash.score / 80);
+        dash.themeIndex = Math.floor((dash.level - 1) / 2) % dashThemes.length;
+        dash.speed = dash.baseSpeed + Math.min(dash.level - 1, 12) * 18;
+        dashScore.textContent = Math.floor(dash.score);
+        dashLevel.textContent = dash.level;
+        dashCountry.textContent = currentDashTheme().country;
+      }
+
+      function currentDashTheme() {
+        return dashThemes[dash.themeIndex] || dashThemes[0];
+      }
+
+      function spawnDashObstacle(x) {
+        const objects = currentDashTheme().objects;
+        const patterns = [
+          [{ kind: objects[0], o: 0 }],
+          [{ kind: objects[1], o: 0 }],
+          [{ kind: objects[2], o: 0 }],
+          [{ kind: objects[0], o: 0 }, { kind: objects[2], o: 118 }],
+          [{ kind: objects[2], o: 0 }, { kind: objects[0], o: 92 }],
+          [{ kind: objects[1], o: 0 }, { kind: objects[2], o: 150 }]
+        ];
+        const available = patterns.slice(0, clamp(2 + dash.level, 3, patterns.length));
+        const pattern = available[Math.floor(Math.random() * available.length)];
+        pattern.forEach((item) => {
+          const size = dashObjectSizes[item.kind] || dashObjectSizes.mosque;
+          dash.obstacles.push({
+            type: item.kind,
+            x: x + item.o,
+            y: dash.ground - size.h,
+            w: size.w,
+            h: size.h,
+            theme: dash.themeIndex
+          });
+        });
+        dash.nextGap = random(430, Math.max(520, 690 - dash.level * 12));
+      }
+
+      function hitDashObstacle(obstacle) {
+        const p = dash.player;
+        const r = { x: p.x + 5, y: p.y + 5, w: p.size - 10, h: p.size - 10 };
+        return r.x < obstacle.x + obstacle.w &&
+          r.x + r.w > obstacle.x &&
+          r.y < obstacle.y + obstacle.h &&
+          r.y + r.h > obstacle.y - (obstacle.type === "spike" ? obstacle.h : 0);
+      }
+
+      function drawDash() {
+        const c = dashCtx;
+        const theme = currentDashTheme();
+        c.clearRect(0, 0, dash.width, dash.height);
+        const bg = c.createLinearGradient(0, 0, dash.width, dash.height);
+        bg.addColorStop(0, theme.sky[0]);
+        bg.addColorStop(0.5, theme.sky[1]);
+        bg.addColorStop(1, theme.sky[2]);
+        c.fillStyle = bg;
+        c.fillRect(0, 0, dash.width, dash.height);
+        c.globalAlpha = 0.26;
+        c.strokeStyle = theme.glow;
+        for (let x = -80; x < dash.width + 80; x += 58) {
+          c.beginPath();
+          c.moveTo(x, 0);
+          c.lineTo(x + dash.height * 0.35, dash.height);
+          c.stroke();
+        }
+        c.globalAlpha = 1;
+        c.fillStyle = theme.ground;
+        c.fillRect(0, dash.ground, dash.width, dash.height - dash.ground);
+        c.fillStyle = theme.accent;
+        c.fillRect(0, dash.ground - 16, dash.width, 18);
+        c.fillStyle = "rgba(255, 255, 255, 0.88)";
+        c.font = "900 15px Inter, sans-serif";
+        c.fillText(`${theme.place} / Level ${dash.level}`, 22, 30);
+        dash.obstacles.forEach((obstacle) => drawDashObject(c, obstacle, theme));
+        const p = dash.player;
+        c.save();
+        c.translate(p.x + p.size / 2, p.y + p.size / 2);
+        c.rotate(p.rotation);
+        drawTraveler(c, p.size, theme);
+        c.restore();
+      }
+
+      function drawTraveler(c, size, theme) {
+        const radius = size / 2;
+        c.fillStyle = "#ffd34d";
+        c.beginPath();
+        c.arc(0, 0, radius, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#ffffff";
+        c.lineWidth = 4;
+        c.stroke();
+        c.fillStyle = theme.accent;
+        c.fillRect(-radius * 0.58, -radius * 0.18, radius * 1.16, radius * 0.34);
+        c.fillStyle = "#071024";
+        c.beginPath();
+        c.arc(-radius * 0.24, -radius * 0.34, radius * 0.08, 0, Math.PI * 2);
+        c.arc(radius * 0.24, -radius * 0.34, radius * 0.08, 0, Math.PI * 2);
+        c.fill();
+        c.strokeStyle = "#071024";
+        c.lineWidth = 2;
+        c.beginPath();
+        c.arc(0, radius * 0.12, radius * 0.28, 0.15, Math.PI - 0.15);
+        c.stroke();
+      }
+
+      function drawDashObject(c, obstacle, theme) {
+        c.save();
+        c.translate(obstacle.x, obstacle.y);
+        c.lineWidth = 3;
+        c.strokeStyle = "#ffffff";
+        c.fillStyle = theme.accent;
+
+        if (obstacle.type === "mosque") drawMosque(c, obstacle, theme);
+        else if (obstacle.type === "bridge") drawBridge(c, obstacle, theme);
+        else if (obstacle.type === "minaret") drawMinaret(c, obstacle, theme);
+        else if (obstacle.type === "eiffel") drawEiffel(c, obstacle, theme);
+        else if (obstacle.type === "arc") drawArc(c, obstacle, theme);
+        else if (obstacle.type === "lamp") drawLamp(c, obstacle, theme);
+        else if (obstacle.type === "torii") drawTorii(c, obstacle, theme);
+        else if (obstacle.type === "pagoda") drawPagoda(c, obstacle, theme);
+        else if (obstacle.type === "lantern") drawLantern(c, obstacle, theme);
+        else if (obstacle.type === "pyramid") drawPyramid(c, obstacle, theme);
+        else if (obstacle.type === "obelisk") drawObelisk(c, obstacle, theme);
+        else drawTemple(c, obstacle, theme);
+
+        c.restore();
+      }
+
+      function drawMosque(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.fillRect(w * 0.2, h * 0.5, w * 0.6, h * 0.42);
+        c.strokeRect(w * 0.2, h * 0.5, w * 0.6, h * 0.42);
+        c.beginPath();
+        c.arc(w * 0.5, h * 0.52, w * 0.28, Math.PI, 0);
+        c.fill();
+        c.stroke();
+        drawMinaretShape(c, w * 0.05, h * 0.18, w * 0.16, h * 0.74, theme);
+        drawMinaretShape(c, w * 0.79, h * 0.18, w * 0.16, h * 0.74, theme);
+        c.fillStyle = theme.glow;
+        c.fillRect(w * 0.42, h * 0.66, w * 0.16, h * 0.26);
+      }
+
+      function drawBridge(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.strokeStyle = theme.glow;
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(6, h * 0.5);
+        c.quadraticCurveTo(w * 0.5, h * 0.02, w - 6, h * 0.5);
+        c.stroke();
+        c.fillStyle = theme.accent;
+        c.fillRect(0, h * 0.52, w, h * 0.14);
+        c.strokeStyle = "#ffffff";
+        c.strokeRect(0, h * 0.52, w, h * 0.14);
+        c.fillRect(w * 0.12, h * 0.24, w * 0.14, h * 0.68);
+        c.fillRect(w * 0.74, h * 0.24, w * 0.14, h * 0.68);
+        c.strokeRect(w * 0.12, h * 0.24, w * 0.14, h * 0.68);
+        c.strokeRect(w * 0.74, h * 0.24, w * 0.14, h * 0.68);
+        for (let x = w * 0.28; x < w * 0.74; x += w * 0.13) {
+          c.beginPath();
+          c.moveTo(x, h * 0.2);
+          c.lineTo(x, h * 0.66);
+          c.stroke();
+        }
+      }
+
+      function drawMinaret(c, obstacle, theme) {
+        drawMinaretShape(c, obstacle.w * 0.18, 0, obstacle.w * 0.64, obstacle.h, theme);
+      }
+
+      function drawMinaretShape(c, x, y, w, h, theme) {
+        c.fillStyle = theme.accent;
+        c.fillRect(x + w * 0.24, y + h * 0.22, w * 0.52, h * 0.72);
+        c.strokeRect(x + w * 0.24, y + h * 0.22, w * 0.52, h * 0.72);
+        c.beginPath();
+        c.moveTo(x + w * 0.5, y);
+        c.lineTo(x + w * 0.9, y + h * 0.24);
+        c.lineTo(x + w * 0.1, y + h * 0.24);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.fillStyle = theme.glow;
+        c.fillRect(x + w * 0.4, y + h * 0.44, w * 0.2, h * 0.16);
+      }
+
+      function drawEiffel(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.strokeStyle = theme.accent;
+        c.lineWidth = 7;
+        c.beginPath();
+        c.moveTo(w * 0.5, 4);
+        c.lineTo(w * 0.12, h);
+        c.moveTo(w * 0.5, 4);
+        c.lineTo(w * 0.88, h);
+        c.stroke();
+        c.lineWidth = 4;
+        c.strokeStyle = "#ffffff";
+        [0.28, 0.48, 0.68, 0.86].forEach((y) => {
+          c.beginPath();
+          c.moveTo(w * (0.24 + y * 0.12), h * y);
+          c.lineTo(w * (0.76 - y * 0.12), h * y);
+          c.stroke();
+        });
+        c.beginPath();
+        c.moveTo(w * 0.25, h * 0.92);
+        c.quadraticCurveTo(w * 0.5, h * 0.72, w * 0.75, h * 0.92);
+        c.stroke();
+      }
+
+      function drawArc(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.fillRect(0, h * 0.18, w, h * 0.74);
+        c.strokeRect(0, h * 0.18, w, h * 0.74);
+        c.fillStyle = "rgba(7, 16, 36, 0.96)";
+        c.beginPath();
+        c.moveTo(w * 0.28, h * 0.92);
+        c.lineTo(w * 0.28, h * 0.56);
+        c.quadraticCurveTo(w * 0.5, h * 0.34, w * 0.72, h * 0.56);
+        c.lineTo(w * 0.72, h * 0.92);
+        c.closePath();
+        c.fill();
+      }
+
+      function drawLamp(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.fillRect(w * 0.44, h * 0.28, w * 0.12, h * 0.64);
+        c.beginPath();
+        c.arc(w * 0.5, h * 0.2, w * 0.24, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.fillStyle = theme.glow;
+        c.beginPath();
+        c.arc(w * 0.5, h * 0.2, w * 0.13, 0, Math.PI * 2);
+        c.fill();
+      }
+
+      function drawTorii(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.fillRect(0, h * 0.12, w, h * 0.16);
+        c.fillRect(w * 0.08, h * 0.3, w * 0.84, h * 0.12);
+        c.fillRect(w * 0.18, h * 0.36, w * 0.14, h * 0.56);
+        c.fillRect(w * 0.68, h * 0.36, w * 0.14, h * 0.56);
+        c.strokeRect(0, h * 0.12, w, h * 0.16);
+        c.strokeRect(w * 0.08, h * 0.3, w * 0.84, h * 0.12);
+        c.strokeRect(w * 0.18, h * 0.36, w * 0.14, h * 0.56);
+        c.strokeRect(w * 0.68, h * 0.36, w * 0.14, h * 0.56);
+      }
+
+      function drawPagoda(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        for (let i = 0; i < 4; i += 1) {
+          const y = h * (0.16 + i * 0.18);
+          const roofW = w * (0.9 - i * 0.12);
+          const bodyW = roofW * 0.62;
+          c.beginPath();
+          c.moveTo((w - roofW) / 2, y + h * 0.08);
+          c.lineTo(w / 2, y);
+          c.lineTo((w + roofW) / 2, y + h * 0.08);
+          c.closePath();
+          c.fill();
+          c.stroke();
+          c.fillRect((w - bodyW) / 2, y + h * 0.08, bodyW, h * 0.12);
+          c.strokeRect((w - bodyW) / 2, y + h * 0.08, bodyW, h * 0.12);
+        }
+      }
+
+      function drawLantern(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.fillRect(w * 0.42, 0, w * 0.16, h * 0.2);
+        c.beginPath();
+        c.ellipse(w * 0.5, h * 0.5, w * 0.36, h * 0.28, 0, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.fillStyle = theme.glow;
+        c.fillRect(w * 0.22, h * 0.46, w * 0.56, h * 0.1);
+        c.fillStyle = theme.accent;
+        c.fillRect(w * 0.34, h * 0.76, w * 0.32, h * 0.16);
+      }
+
+      function drawPyramid(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.beginPath();
+        c.moveTo(w * 0.5, h * 0.08);
+        c.lineTo(0, h * 0.92);
+        c.lineTo(w, h * 0.92);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.strokeStyle = theme.glow;
+        c.beginPath();
+        c.moveTo(w * 0.5, h * 0.08);
+        c.lineTo(w * 0.58, h * 0.92);
+        c.stroke();
+      }
+
+      function drawObelisk(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.beginPath();
+        c.moveTo(w * 0.5, 0);
+        c.lineTo(w * 0.82, h * 0.22);
+        c.lineTo(w * 0.68, h * 0.92);
+        c.lineTo(w * 0.32, h * 0.92);
+        c.lineTo(w * 0.18, h * 0.22);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.fillStyle = theme.glow;
+        c.fillRect(w * 0.44, h * 0.34, w * 0.12, h * 0.38);
+      }
+
+      function drawTemple(c, obstacle, theme) {
+        const w = obstacle.w;
+        const h = obstacle.h;
+        c.fillStyle = theme.accent;
+        c.beginPath();
+        c.moveTo(w * 0.5, h * 0.06);
+        c.lineTo(w * 0.08, h * 0.24);
+        c.lineTo(w * 0.92, h * 0.24);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.fillRect(w * 0.14, h * 0.78, w * 0.72, h * 0.14);
+        for (let i = 0; i < 4; i += 1) {
+          c.fillRect(w * (0.18 + i * 0.18), h * 0.28, w * 0.08, h * 0.5);
+          c.strokeRect(w * (0.18 + i * 0.18), h * 0.28, w * 0.08, h * 0.5);
+        }
+      }
+      requestAnimationFrame(dashLoop);
+
+      const blockBoard = document.getElementById("blockBoard");
+      const pieceList = document.getElementById("pieceList");
+      const blockScore = document.getElementById("blockScore");
+      document.getElementById("blockRestartButton").addEventListener("click", newBlockGame);
+      const blockColors = ["#2fb8ff", "#ff4ea1", "#53e078", "#ffd34d", "#ff8b42", "#835cff"];
+      const blockShapes = [
+        { name: "Klein", cells: [[0, 0]] },
+        { name: "Doppel", cells: [[0, 0], [1, 0]] },
+        { name: "Drei", cells: [[0, 0], [1, 0], [2, 0]] },
+        { name: "Drei hoch", cells: [[0, 0], [0, 1], [0, 2]] },
+        { name: "Block", cells: [[0, 0], [1, 0], [0, 1], [1, 1]] },
+        { name: "L", cells: [[0, 0], [0, 1], [0, 2], [1, 2]] },
+        { name: "T", cells: [[0, 0], [1, 0], [2, 0], [1, 1]] },
+        { name: "Plus", cells: [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]] }
+      ];
+      const blocks = { board: [], score: 0, pieces: [], selected: null, preview: [], bad: null };
+      createBlockBoard();
+      newBlockGame();
+
+      function createBlockBoard() {
+        blockBoard.innerHTML = "";
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            cell.className = "block-cell";
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+            cell.addEventListener("pointerenter", () => blockPreview(row, col));
+            cell.addEventListener("click", () => placeBlock(row, col));
+            cell.addEventListener("pointerleave", clearBlockPreview);
+            blockBoard.append(cell);
+          }
+        }
+      }
+
+      function newBlockGame() {
+        blocks.board = Array.from({ length: 8 }, () => Array.from({ length: 8 }, () => null));
+        blocks.score = 0;
+        blocks.selected = null;
+        blocks.preview = [];
+        blocks.bad = null;
+        blocks.pieces = [makePiece(), makePiece(), makePiece()];
+        renderBlocks();
+      }
+
+      function makePiece() {
+        const shape = blockShapes[Math.floor(Math.random() * blockShapes.length)];
+        return {
+          id: `${Date.now()}-${Math.random()}`,
+          name: shape.name,
+          cells: shape.cells,
+          color: blockColors[Math.floor(Math.random() * blockColors.length)],
+          used: false
+        };
+      }
+
+      function renderBlocks() {
+        blockScore.textContent = blocks.score;
+        blockBoard.querySelectorAll(".block-cell").forEach((cell) => {
+          const row = Number(cell.dataset.row);
+          const col = Number(cell.dataset.col);
+          const color = blocks.board[row][col];
+          cell.className = "block-cell";
+          cell.style.removeProperty("--block-color");
+          if (color) {
+            cell.classList.add("filled");
+            cell.style.setProperty("--block-color", color);
+          }
+          if (blocks.preview.some((item) => item.row === row && item.col === col)) {
+            cell.classList.add("preview");
+            cell.style.setProperty("--block-color", selectedBlockPiece()?.color || blockColors[0]);
+          }
+          if (blocks.bad && blocks.bad.row === row && blocks.bad.col === col) {
+            cell.classList.add("bad");
+          }
+        });
+
+        pieceList.innerHTML = "";
+        blocks.pieces.forEach((piece) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "piece-button";
+          button.classList.toggle("selected", piece.id === blocks.selected);
+          button.classList.toggle("used", piece.used);
+          button.disabled = piece.used;
+          button.addEventListener("click", () => {
+            blocks.selected = piece.id;
+            clearBlockPreview();
+            renderBlocks();
+          });
+          const preview = document.createElement("div");
+          preview.className = "piece-preview";
+          preview.style.setProperty("--block-color", piece.color);
+          const active = new Set(piece.cells.map(([x, y]) => `${x + 1},${y + 1}`));
+          for (let row = 0; row < 5; row += 1) {
+            for (let col = 0; col < 5; col += 1) {
+              const pc = document.createElement("div");
+              pc.className = "piece-cell";
+              if (active.has(`${col},${row}`)) pc.classList.add("active");
+              preview.append(pc);
+            }
+          }
+          const label = document.createElement("div");
+          label.className = "piece-label";
+          label.textContent = piece.used ? "Gespielt" : piece.name;
+          button.append(preview, label);
+          pieceList.append(button);
+        });
+      }
+
+      function blockPreview(row, col) {
+        const piece = selectedBlockPiece();
+        if (!piece) return;
+        if (!canPlaceBlock(piece, row, col)) {
+          blocks.preview = [];
+          blocks.bad = { row, col };
+          renderBlocks();
+          return;
+        }
+        blocks.bad = null;
+        blocks.preview = piece.cells.map(([x, y]) => ({ row: row + y, col: col + x }));
+        renderBlocks();
+      }
+
+      function clearBlockPreview() {
+        blocks.preview = [];
+        blocks.bad = null;
+      }
+
+      function placeBlock(row, col) {
+        const piece = selectedBlockPiece();
+        if (!piece || !canPlaceBlock(piece, row, col)) return;
+        piece.cells.forEach(([x, y]) => {
+          blocks.board[row + y][col + x] = piece.color;
+        });
+        piece.used = true;
+        blocks.selected = null;
+        blocks.preview = [];
+        blocks.score += piece.cells.length * 5;
+        const cleared = clearLines();
+        blocks.score += cleared * cleared * 60;
+        if (blocks.pieces.every((pieceItem) => pieceItem.used)) {
+          blocks.pieces = [makePiece(), makePiece(), makePiece()];
+        }
+        renderBlocks();
+      }
+
+      function selectedBlockPiece() {
+        return blocks.pieces.find((piece) => piece.id === blocks.selected && !piece.used);
+      }
+
+      function canPlaceBlock(piece, row, col) {
+        return piece.cells.every(([x, y]) => {
+          const targetRow = row + y;
+          const targetCol = col + x;
+          return targetRow >= 0 &&
+            targetRow < 8 &&
+            targetCol >= 0 &&
+            targetCol < 8 &&
+            !blocks.board[targetRow][targetCol];
+        });
+      }
+
+      function clearLines() {
+        const rows = [];
+        const cols = [];
+        for (let row = 0; row < 8; row += 1) {
+          if (blocks.board[row].every(Boolean)) rows.push(row);
+        }
+        for (let col = 0; col < 8; col += 1) {
+          if (blocks.board.every((row) => row[col])) cols.push(col);
+        }
+        rows.forEach((row) => {
+          for (let col = 0; col < 8; col += 1) blocks.board[row][col] = null;
+        });
+        cols.forEach((col) => {
+          for (let row = 0; row < 8; row += 1) blocks.board[row][col] = null;
+        });
+        return rows.length + cols.length;
+      }
+
+      function random(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+    </script>
+  </body>
+</html>
