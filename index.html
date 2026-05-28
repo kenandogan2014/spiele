@@ -17,6 +17,7 @@
         --yellow: #ffd34d;
         --orange: #ff8b42;
         --violet: #835cff;
+        --danger: #ff3f7f;
         --shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
       }
 
@@ -33,6 +34,7 @@
           radial-gradient(circle at 20% 18%, rgba(255, 211, 77, 0.22), transparent 28%),
           radial-gradient(circle at 84% 80%, rgba(83, 224, 120, 0.18), transparent 25%),
           var(--bg);
+        overflow-x: hidden;
       }
 
       button {
@@ -44,6 +46,16 @@
         touch-action: manipulation;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      }
+
+      button:not(:disabled):hover {
+        transform: translateY(-1px);
+      }
+
+      button:focus-visible {
+        outline: 3px solid rgba(255, 211, 77, 0.85);
+        outline-offset: 3px;
       }
 
       .app {
@@ -66,6 +78,24 @@
         border-radius: 8px;
         background: linear-gradient(110deg, var(--blue), var(--violet) 48%, var(--pink));
         box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .topbar::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+        background-size: 32px 32px;
+        opacity: 0.36;
+      }
+
+      .topbar > * {
+        position: relative;
+        z-index: 1;
       }
 
       .eyebrow {
@@ -90,12 +120,28 @@
         letter-spacing: 0;
       }
 
-      .menu-button, .wide-button, .controls button, .overlay button {
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .menu-button, .sound-button, .wide-button, .controls button, .overlay button {
         min-height: 52px;
         padding: 0 18px;
         color: #071024;
         background: linear-gradient(135deg, var(--yellow), var(--green));
         box-shadow: 0 14px 34px rgba(83, 224, 120, 0.18);
+      }
+
+      .sound-button {
+        min-width: 56px;
+        padding: 0 14px;
+      }
+
+      .sound-button.off {
+        color: #ffffff;
+        background: linear-gradient(135deg, #2b334f, #596174);
       }
 
       .home {
@@ -132,6 +178,16 @@
       .game-card > * { position: relative; z-index: 1; }
       .game-card span { font-size: 0.85rem; font-weight: 950; text-transform: uppercase; }
       .game-card strong { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 0.95; }
+      .game-card small {
+        min-height: 30px;
+        display: inline-grid;
+        place-items: center;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(7, 16, 36, 0.36);
+        color: rgba(255, 255, 255, 0.88);
+        font-weight: 900;
+      }
       .imposter { background: linear-gradient(135deg, var(--blue), var(--pink)); }
       .dash { background: linear-gradient(135deg, var(--yellow), var(--orange)); }
       .blocks { background: linear-gradient(135deg, var(--green), var(--violet)); }
@@ -175,6 +231,9 @@
       }
       .score-box span { font-size: 1.55rem; line-height: 1; font-weight: 1000; }
       .score-box small { color: rgba(255, 255, 255, 0.75); font-size: 0.72rem; font-weight: 900; text-transform: uppercase; }
+      .score-box.best span {
+        color: var(--yellow);
+      }
       .dash-stats {
         display: flex;
         flex-wrap: wrap;
@@ -252,6 +311,9 @@
         background: var(--block-color);
         box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.28);
       }
+      .block-cell.clearing {
+        animation: popClear 0.28s ease;
+      }
       .block-cell.preview { background: var(--block-color); opacity: 0.72; transform: scale(0.94); }
       .block-cell.bad { background: rgba(255, 78, 161, 0.38); }
       .piece-list { display: grid; gap: 12px; align-content: center; }
@@ -268,6 +330,9 @@
       }
       .piece-button.selected { background: rgba(47, 184, 255, 0.18); box-shadow: inset 0 0 0 2px rgba(47, 184, 255, 0.75); }
       .piece-button.used { opacity: 0.34; cursor: default; }
+      .piece-button:disabled {
+        cursor: not-allowed;
+      }
       .piece-preview {
         width: 82px;
         height: 82px;
@@ -278,10 +343,39 @@
       }
       .piece-label { text-align: left; font-weight: 1000; }
       #blocksView .wide-button { margin: 0 16px 16px; width: calc(100% - 32px); }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        width: min(420px, calc(100% - 24px));
+        min-height: 52px;
+        display: grid;
+        place-items: center;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: #071024;
+        background: linear-gradient(135deg, var(--yellow), var(--green));
+        box-shadow: var(--shadow);
+        font-weight: 1000;
+        text-align: center;
+        z-index: 30;
+      }
+      .toast.hidden {
+        display: none;
+      }
+
+      @keyframes popClear {
+        0% { transform: scale(1); }
+        50% { transform: scale(0.72); opacity: 0.55; }
+        100% { transform: scale(1); }
+      }
 
       @media (max-width: 820px) {
         .app { width: min(100% - 16px, 1120px); padding: 8px 0; gap: 8px; }
         .topbar { min-height: 72px; padding: 13px; }
+        .top-actions { gap: 8px; }
+        .menu-button, .sound-button { min-height: 44px; padding: 0 12px; }
         .home { grid-template-columns: 1fr; }
         .game-card { min-height: 190px; }
         .dash-stats { gap: 8px; }
@@ -304,21 +398,27 @@
           <p class="eyebrow">Game Browser</p>
           <h1>Kenans Spiele</h1>
         </div>
-        <button class="menu-button" type="button" id="homeButton">Menue</button>
+        <div class="top-actions">
+          <button class="sound-button" type="button" id="soundButton" aria-pressed="true">Sound</button>
+          <button class="menu-button" type="button" id="homeButton">Menue</button>
+        </div>
       </header>
 
       <section class="home" id="homeView" aria-label="Spielauswahl">
         <button class="game-card imposter" type="button" data-game="imposter">
           <span>Party</span>
           <strong>Imposter</strong>
+          <small id="imposterMeta">3-12 Spieler</small>
         </button>
         <button class="game-card dash" type="button" data-game="dash">
           <span>Arcade</span>
           <strong>Cube Dash</strong>
+          <small id="dashMeta">Best 0</small>
         </button>
         <button class="game-card blocks" type="button" data-game="blocks">
           <span>Puzzle</span>
           <strong>Block Pop</strong>
+          <small id="blocksMeta">Best 0</small>
         </button>
       </section>
 
@@ -336,6 +436,7 @@
             <div class="score-box dash-country"><span id="dashCountry">Tuerkei</span><small>Land</small></div>
             <div class="score-box"><span id="dashLevel">1</span><small>Level</small></div>
             <div class="score-box"><span id="dashScore">0</span><small>Score</small></div>
+            <div class="score-box best"><span id="dashBest">0</span><small>Best</small></div>
           </div>
         </div>
         <canvas id="dashCanvas"></canvas>
@@ -356,7 +457,11 @@
             <p class="eyebrow">Puzzle</p>
             <h2>Block Pop</h2>
           </div>
-          <div class="score-box"><span id="blockScore">0</span><small>Score</small></div>
+          <div class="dash-stats">
+            <div class="score-box dash-country"><span id="blockStatus">Bereit</span><small>Status</small></div>
+            <div class="score-box"><span id="blockScore">0</span><small>Score</small></div>
+            <div class="score-box best"><span id="blockBest">0</span><small>Best</small></div>
+          </div>
         </div>
         <div class="block-layout">
           <div class="block-board" id="blockBoard"></div>
@@ -364,6 +469,7 @@
         </div>
         <button class="wide-button" type="button" id="blockRestartButton">Neu starten</button>
       </section>
+      <div class="toast hidden" id="toast" aria-live="polite"></div>
     </main>
 
     <script>
@@ -373,25 +479,90 @@
         dash: document.getElementById("dashView"),
         blocks: document.getElementById("blocksView")
       };
+      const DASH_BEST_KEY = "kenans-spiele-dash-best";
+      const BLOCK_BEST_KEY = "kenans-spiele-block-best";
+      const SOUND_KEY = "kenans-spiele-sound";
+      const soundButton = document.getElementById("soundButton");
+      const dashMeta = document.getElementById("dashMeta");
+      const blocksMeta = document.getElementById("blocksMeta");
+      const toast = document.getElementById("toast");
+      let soundEnabled = localStorage.getItem(SOUND_KEY) !== "off";
+      let audioContext = null;
 
       document.getElementById("homeButton").addEventListener("click", () => showView("home"));
+      soundButton.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
+        updateSoundButton();
+        if (soundEnabled) playTone("tap");
+      });
       document.querySelectorAll("[data-game]").forEach((button) => {
         button.addEventListener("click", () => showView(button.dataset.game));
       });
+      updateSoundButton();
 
       function showView(name) {
         Object.entries(views).forEach(([key, element]) => {
           element.classList.toggle("hidden", key !== name);
         });
+        playTone("tap");
         if (name === "dash") {
           resizeDash();
           drawDash();
         }
       }
 
+      function updateSoundButton() {
+        soundButton.textContent = soundEnabled ? "Sound" : "Leise";
+        soundButton.classList.toggle("off", !soundEnabled);
+        soundButton.setAttribute("aria-pressed", String(soundEnabled));
+      }
+
+      function playTone(type) {
+        if (!soundEnabled) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        if (!audioContext) audioContext = new AudioContext();
+        if (audioContext.state === "suspended") audioContext.resume();
+        const now = audioContext.currentTime;
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const settings = {
+          tap: [520, 0.04, 0.025],
+          jump: [740, 0.07, 0.035],
+          clear: [920, 0.12, 0.045],
+          crash: [140, 0.18, 0.06]
+        }[type] || [440, 0.05, 0.03];
+        oscillator.type = type === "crash" ? "sawtooth" : "triangle";
+        oscillator.frequency.setValueAtTime(settings[0], now);
+        if (type === "clear") oscillator.frequency.exponentialRampToValueAtTime(settings[0] * 1.45, now + settings[1]);
+        if (type === "crash") oscillator.frequency.exponentialRampToValueAtTime(70, now + settings[1]);
+        gain.gain.setValueAtTime(settings[2], now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + settings[1]);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + settings[1] + 0.02);
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.remove("hidden");
+        window.clearTimeout(showToast.timeoutId);
+        showToast.timeoutId = window.setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 1400);
+      }
+
+      function updateHomeMeta() {
+        if (dashMeta) dashMeta.textContent = `Best ${dash.best || 0}`;
+        if (blocksMeta) blocksMeta.textContent = `Best ${blocks.best || 0}`;
+      }
+
       const dashCanvas = document.getElementById("dashCanvas");
       const dashCtx = dashCanvas.getContext("2d");
       const dashScore = document.getElementById("dashScore");
+      const dashBest = document.getElementById("dashBest");
       const dashLevel = document.getElementById("dashLevel");
       const dashCountry = document.getElementById("dashCountry");
       const dashOverlay = document.getElementById("dashOverlay");
@@ -455,6 +626,7 @@
         dpr: 1,
         ground: 0,
         score: 0,
+        best: Number(localStorage.getItem(DASH_BEST_KEY) || 0),
         level: 1,
         themeIndex: 0,
         baseSpeed: 430,
@@ -467,6 +639,7 @@
         obstacles: [],
         nextGap: 420
       };
+      dashBest.textContent = dash.best;
 
       document.getElementById("dashStartButton").addEventListener("click", startDash);
       document.getElementById("dashJumpButton").addEventListener("pointerdown", (event) => {
@@ -522,6 +695,7 @@
         updateDashProgress();
         dashOverlay.classList.add("hidden");
         spawnDashObstacle(dash.width + 380);
+        playTone("tap");
       }
 
       function dashAction() {
@@ -537,6 +711,7 @@
         player.vy = player.grounded ? dash.jump : dash.jump * 0.88;
         player.grounded = false;
         player.jumpsLeft -= 1;
+        playTone("jump");
       }
 
       function dashLoop(time) {
@@ -570,6 +745,13 @@
         }
         if (dash.obstacles.some(hitDashObstacle)) {
           dash.running = false;
+          if (Math.floor(dash.score) > dash.best) {
+            dash.best = Math.floor(dash.score);
+            localStorage.setItem(DASH_BEST_KEY, String(dash.best));
+          }
+          dashBest.textContent = dash.best;
+          updateHomeMeta();
+          playTone("crash");
           dashOverlayTitle.textContent = `${Math.floor(dash.score)} Punkte in ${currentDashTheme().country}`;
           dashOverlay.classList.remove("hidden");
         }
@@ -578,8 +760,9 @@
       function updateDashProgress() {
         dash.level = 1 + Math.floor(dash.score / 80);
         dash.themeIndex = Math.floor((dash.level - 1) / 2) % dashThemes.length;
-        dash.speed = dash.baseSpeed + Math.min(dash.level - 1, 12) * 18;
+        dash.speed = dash.baseSpeed;
         dashScore.textContent = Math.floor(dash.score);
+        dashBest.textContent = dash.best;
         dashLevel.textContent = dash.level;
         dashCountry.textContent = currentDashTheme().country;
       }
@@ -926,7 +1109,9 @@
       const blockBoard = document.getElementById("blockBoard");
       const pieceList = document.getElementById("pieceList");
       const blockScore = document.getElementById("blockScore");
-      document.getElementById("blockRestartButton").addEventListener("click", newBlockGame);
+      const blockBest = document.getElementById("blockBest");
+      const blockStatus = document.getElementById("blockStatus");
+      document.getElementById("blockRestartButton").addEventListener("click", () => newBlockGame());
       const blockColors = ["#2fb8ff", "#ff4ea1", "#53e078", "#ffd34d", "#ff8b42", "#835cff"];
       const blockShapes = [
         { name: "Klein", cells: [[0, 0]] },
@@ -938,9 +1123,21 @@
         { name: "T", cells: [[0, 0], [1, 0], [2, 0], [1, 1]] },
         { name: "Plus", cells: [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]] }
       ];
-      const blocks = { board: [], score: 0, pieces: [], selected: null, preview: [], bad: null };
+      const blocks = {
+        board: [],
+        score: 0,
+        best: Number(localStorage.getItem(BLOCK_BEST_KEY) || 0),
+        pieces: [],
+        selected: null,
+        preview: [],
+        bad: null,
+        gameOver: false,
+        lastClear: 0
+      };
+      blockBest.textContent = blocks.best;
       createBlockBoard();
-      newBlockGame();
+      newBlockGame(true);
+      updateHomeMeta();
 
       function createBlockBoard() {
         blockBoard.innerHTML = "";
@@ -953,20 +1150,36 @@
             cell.dataset.col = col;
             cell.addEventListener("pointerenter", () => blockPreview(row, col));
             cell.addEventListener("click", () => placeBlock(row, col));
-            cell.addEventListener("pointerleave", clearBlockPreview);
+            cell.addEventListener("pointerleave", () => {
+              clearBlockPreview();
+              renderBlocks();
+            });
             blockBoard.append(cell);
           }
         }
       }
 
-      function newBlockGame() {
+      function newBlockGame(silent = false) {
         blocks.board = Array.from({ length: 8 }, () => Array.from({ length: 8 }, () => null));
         blocks.score = 0;
         blocks.selected = null;
         blocks.preview = [];
         blocks.bad = null;
-        blocks.pieces = [makePiece(), makePiece(), makePiece()];
+        blocks.gameOver = false;
+        blocks.lastClear = 0;
+        blocks.pieces = makePieceSet();
+        blockStatus.textContent = "Bereit";
         renderBlocks();
+        if (!silent) playTone("tap");
+      }
+
+      function makePieceSet() {
+        let pieces = [];
+        for (let attempt = 0; attempt < 20; attempt += 1) {
+          pieces = [makePiece(), makePiece(), makePiece()];
+          if (pieces.some((piece) => canPieceFit(piece))) return pieces;
+        }
+        return pieces;
       }
 
       function makePiece() {
@@ -982,6 +1195,9 @@
 
       function renderBlocks() {
         blockScore.textContent = blocks.score;
+        blockBest.textContent = blocks.best;
+        if (blocks.gameOver) blockStatus.textContent = "Game Over";
+        updateHomeMeta();
         blockBoard.querySelectorAll(".block-cell").forEach((cell) => {
           const row = Number(cell.dataset.row);
           const col = Number(cell.dataset.col);
@@ -1008,11 +1224,14 @@
           button.className = "piece-button";
           button.classList.toggle("selected", piece.id === blocks.selected);
           button.classList.toggle("used", piece.used);
-          button.disabled = piece.used;
+          button.disabled = piece.used || blocks.gameOver;
           button.addEventListener("click", () => {
+            if (blocks.gameOver) return;
             blocks.selected = piece.id;
+            blockStatus.textContent = "Setzen";
             clearBlockPreview();
             renderBlocks();
+            playTone("tap");
           });
           const preview = document.createElement("div");
           preview.className = "piece-preview";
@@ -1036,7 +1255,7 @@
 
       function blockPreview(row, col) {
         const piece = selectedBlockPiece();
-        if (!piece) return;
+        if (!piece || blocks.gameOver) return;
         if (!canPlaceBlock(piece, row, col)) {
           blocks.preview = [];
           blocks.bad = { row, col };
@@ -1055,7 +1274,16 @@
 
       function placeBlock(row, col) {
         const piece = selectedBlockPiece();
-        if (!piece || !canPlaceBlock(piece, row, col)) return;
+        if (blocks.gameOver) return;
+        if (!piece) {
+          showToast("Form auswaehlen");
+          return;
+        }
+        if (!canPlaceBlock(piece, row, col)) {
+          showToast("Passt hier nicht");
+          playTone("crash");
+          return;
+        }
         piece.cells.forEach(([x, y]) => {
           blocks.board[row + y][col + x] = piece.color;
         });
@@ -1065,8 +1293,29 @@
         blocks.score += piece.cells.length * 5;
         const cleared = clearLines();
         blocks.score += cleared * cleared * 60;
+        if (cleared > 0) {
+          blocks.lastClear = cleared;
+          blockStatus.textContent = cleared === 1 ? "Combo" : `${cleared}x Combo`;
+          showToast(cleared === 1 ? "Linie geloescht" : `${cleared} Linien geloescht`);
+          playTone("clear");
+        } else {
+          blockStatus.textContent = "Weiter";
+          playTone("tap");
+        }
         if (blocks.pieces.every((pieceItem) => pieceItem.used)) {
-          blocks.pieces = [makePiece(), makePiece(), makePiece()];
+          blocks.pieces = makePieceSet();
+          blockStatus.textContent = "Neue Formen";
+          showToast("Neue Formen");
+        }
+        if (blocks.score > blocks.best) {
+          blocks.best = blocks.score;
+          localStorage.setItem(BLOCK_BEST_KEY, String(blocks.best));
+        }
+        if (!canAnyBlockPieceFit()) {
+          blocks.gameOver = true;
+          blockStatus.textContent = "Game Over";
+          showToast(`Game Over: ${blocks.score}`);
+          playTone("crash");
         }
         renderBlocks();
       }
@@ -1085,6 +1334,19 @@
             targetCol < 8 &&
             !blocks.board[targetRow][targetCol];
         });
+      }
+
+      function canPieceFit(piece) {
+        for (let row = 0; row < 8; row += 1) {
+          for (let col = 0; col < 8; col += 1) {
+            if (canPlaceBlock(piece, row, col)) return true;
+          }
+        }
+        return false;
+      }
+
+      function canAnyBlockPieceFit() {
+        return blocks.pieces.some((piece) => !piece.used && canPieceFit(piece));
       }
 
       function clearLines() {
