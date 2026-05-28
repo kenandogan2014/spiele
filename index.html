@@ -460,7 +460,7 @@
         baseSpeed: 430,
         speed: 430,
         gravity: 3500,
-        jump: -940,
+        jump: -1080,
         last: 0,
         maxJumps: 2,
         player: { x: 0, y: 0, size: 46, vy: 0, grounded: true, jumpsLeft: 2, rotation: 0 },
@@ -510,7 +510,7 @@
         dash.baseSpeed = clamp(dash.width * 0.46, 360, 560);
         dash.speed = dash.baseSpeed;
         dash.gravity = clamp(dash.height * 6.5, 3150, 4300);
-        dash.jump = -clamp(dash.height * 1.76, 810, 1040);
+        dash.jump = -clamp(dash.height * 2.05, 940, 1220);
         dash.player.y = dash.ground - dash.player.size;
         dash.player.vy = 0;
         dash.player.grounded = true;
